@@ -12,7 +12,9 @@ CREATE TABLE `blogs` (
   `details` varchar(255),
   `tags` varchar(255),
   `comments` varchar(255),
-  `time_taken` decimal(20,10)
+  `publish_time` timestamp,
+  `link` varchar(255),
+  `time_taken` bigint
 );
 
 CREATE TABLE `tags` (
