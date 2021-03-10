@@ -20,6 +20,16 @@ def test_db():
     blog_status = insert_blog("Title", "PSP", "Details", "SCi", "wow", 1337.0001)
     return jsonify({"data": "Test API", "status": [search_status, tag_status, blog_status]})
 
+@app.route('/get-blogs', methods=['GET'])
+def retrieve_blog():
+    cursor = mysql.connection.cursor()
+    query_string = "SELECT * FROM blogs"
+    cursor.execute(query_string)
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify({"data":data})
+
+
 def insert_tags(tag):
     cur = mysql.connection.cursor()
     cur.execute("INSERT INTO tags(tag) VALUES (%s)", (tag,))
@@ -46,6 +56,6 @@ def insert_search_history(search_tag, created_at, result_found):
     cur.close()
     if(row_count): return 'Success'
     else: return 'Fail'
-
+    
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
