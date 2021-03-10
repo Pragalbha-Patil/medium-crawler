@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 
-import datetime; 
+import datetime
+import time
+
+from scrape import fetch_links, fetch_articles, save_to_csv
 
 app = Flask(__name__)
 
@@ -17,8 +20,36 @@ def test_db():
     ct = datetime.datetime.now() 
     search_status = insert_search_history("Sci", ct, "1")
     tag_status = insert_tags("Painting")
-    blog_status = insert_blog("Title", "PSP", "Details", "SCi", "wow", 1337.0001)
+    blog_status = insert_blog("Coding is great", "PSP", "5mins", "coding", "wow what a blog", None, "google.com", 1)
     return jsonify({"data": "Test API", "status": [search_status, tag_status, blog_status]})
+
+@app.route('/search', methods=['POST'])
+def search():
+    suffixes = ['', 'latest', 'archive/2000', 'archive/2001', 'archive/2002', 'archive/2003', 'archive/2004', 'archive/2005', 'archive/2006', 'archive/2007', 'archive/2008', 'archive/2009',
+        'archive/2010', 'archive/2011', 'archive/2012', 'archive/2013', 'archive/2014', 'archive/2015', 'archive/2016', 'archive/2017', 'archive/2018'
+    ]
+    
+    tag_to_search = request.form.get('tag', '')
+    
+    links = fetch_links(tag_to_search, suffixes)
+    articles = fetch_articles(links)
+    try:
+        for article in articles:
+            title = str(article['title'])
+            author = str(article['author'])
+            blog = str(article['blog'])
+            read = str(article['read'])
+            publish_time = str(article['publish_time'])
+            link = str(article['link'])
+            time_taken = int(article['time_taken'])
+            insert_tags(tag_to_search)
+            ct = datetime.datetime.now()
+            insert_search_history(tag_to_search, ct, 1)
+            insert_blog(title, author, read, tag_to_search, None, publish_time, link, time_taken)
+    except:
+        print("An exception occurred")
+    finally:
+        return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
 
 @app.route('/get-blogs', methods=['GET'])
 def retrieve_blog():
@@ -39,9 +70,9 @@ def insert_tags(tag):
     if(row_count): return 'Success'
     else: return 'Fail'
 
-def insert_blog(title, author, details, tags, comments, time_taken):
+def insert_blog(title, author, details, tags, comments, publish_time, link, time_taken):
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO blogs(title, author, details, tags, comments, time_taken) VALUES (%s,%s,%s,%s,%s,%s)", (title, author, details, tags, comments, time_taken,))
+    cur.execute("INSERT INTO blogs(title, author, details, tags, comments, publish_time, link, time_taken) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", (title, author, details, tags, comments, publish_time, link, time_taken,))
     row_count = cur.rowcount;
     mysql.connection.commit()
     cur.close()
