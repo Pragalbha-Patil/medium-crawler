@@ -47,7 +47,7 @@ body {
   height: 40px;
   margin: 0 0 0 5px;
   background: transparent;
-  color: #46EF0B;
+  color: #A7A7A7;
   border: none;
   outline: none;
   font-size: 18px;
@@ -135,8 +135,8 @@ body {
 }
 
 .tags {
-  background-color: #D3D3D3;
-  color: #fff;
+  background-color: #46EF0B;
+  color: #0a0a0a;
   padding: 5px;
   /* font-size: 16px; */
 }
@@ -152,11 +152,31 @@ body {
 .current-title {
   font-family: 'Shippori Mincho B1', serif;
   font-size: 20px;
+  margin-bottom: 2%;
 }
 
 .current-author {
   font-family: 'Manrope', sans-serif;
+  color: #d3d3d3;
   /* font-style: italic; */
+}
+
+.read-time {
+  font-family: 'Manrope', sans-serif;
+  color: #d3d3d3;
+}
+
+.modal-content {
+  background-color: rgba(8, 27, 51, 0.9);
+  color: #fff;
+}
+
+a,a:link {
+  color: #46EF0B;
+}
+
+a:hover {
+  color: #2BD885;
 }
 
 #show{display: block;}

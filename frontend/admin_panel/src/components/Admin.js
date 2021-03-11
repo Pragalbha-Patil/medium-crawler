@@ -193,7 +193,7 @@ export default class Admin extends Component {
                 </ol>
             </div>
             {/* blog modal */}
-            <Modal show={this.state.isModalOpen} onHide={this.hideModal} dialogClassName="cartModal modal-lg">
+            <Modal show={this.state.isModalOpen} onHide={this.hideModal} dialogClassName="modal-lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Blog details</Modal.Title>
                 </Modal.Header>
