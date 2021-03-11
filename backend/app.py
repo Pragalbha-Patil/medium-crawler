@@ -65,6 +65,15 @@ def retrieve_blog():
     cursor.close()
     return jsonify({"data":data})
 
+@app.route('/get-search-results', methods=['GET'])
+def get_search_history():
+    cursor = mysql.connection.cursor()
+    query_string = "SELECT * FROM search_history"
+    cursor.execute(query_string)
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify({"data":data})
+
 
 def insert_tags(tag):
     cur = mysql.connection.cursor()
