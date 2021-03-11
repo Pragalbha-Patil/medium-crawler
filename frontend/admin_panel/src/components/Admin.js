@@ -145,7 +145,7 @@ export default class Admin extends Component {
             const timer = setInterval(() => {
                 console.log('Polling server for results');
                 this.onlyFetchResults()
-            }, 10000);
+            }, 3000);
 
             this.setState({ timer: timer, tag: query });
             console.log("Current state");
