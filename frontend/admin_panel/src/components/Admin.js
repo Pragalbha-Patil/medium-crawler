@@ -25,11 +25,13 @@ export default class Admin extends Component {
             currentTag: null,
             currentTimeTaken: null,
             currentComment: null,
+            isSearchHistoryOpen: false
         }
     }
 
     componentDidMount() {
         this.divstatus()
+        this.fetchSearchResults()
     }
 
     divstatus = (e) =>{
@@ -41,6 +43,28 @@ export default class Admin extends Component {
         else {
             this.setState({show: 'hide'});
         }
+    }
+
+    fetchSearchResults() {
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Accept", "application/json");
+
+        var requestOptions = {
+        method: 'GET',
+        headers: myHeaders,
+        redirect: 'follow'
+        };
+
+        fetch("http://127.0.0.1:5000/get-search-results", requestOptions)
+        .then(response => response.text())
+        .then(result => {
+            result = JSON.parse(result);
+            result.data.map((element, index) => {
+                this.setState({ search_history: [...this.state.search_history, element] })
+            })
+        })
+        .catch(error => console.log('error', error));
     }
 
     onlyFetchResults() {
@@ -145,12 +169,20 @@ export default class Admin extends Component {
             currentComment: "Not available",
             currentUrl: blog[8],
             currentTimeTaken: blog[9], 
-            isModalOpen: true 
+            isModalOpen: true,
         });
     }
 
     hideModal = () => {
         this.setState({isModalOpen: false});
+    }
+    
+    hideSearchModal = () => {
+        this.setState({isSearchHistoryOpen: false});
+    }
+
+    showSearchHistory() {
+        this.setState({isSearchHistoryOpen: true});
     }
 
 
@@ -176,7 +208,7 @@ export default class Admin extends Component {
                 </span>
             </div> */}
             </div>
-            <div className="count">
+            <div className="count" onClick={() => {this.showSearchHistory()}}>
                 <span>
                     <i className="fa fa-history" id="history-icon"> 0</i>
                 </span>
@@ -218,6 +250,28 @@ export default class Admin extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={this.hideModal}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            {/* search history modal */}
+            <Modal show={this.state.isSearchHistoryOpen} onHide={this.hideSearchModal} dialogClassName="modal-dialog">
+                <Modal.Header closeButton>
+                    <Modal.Title>Search history</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {
+                        this.state.search_history.map((result, index) => (
+                            <ul key={result[0]}>
+                                <li>
+                                    <span className="search-history">{result[1].toUpperCase()}</span> searched at {result[2]}
+                                </li>
+                            </ul>
+                        ))
+                    }
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={this.hideSearchModal}>
                         Close
                     </Button>
                 </Modal.Footer>
