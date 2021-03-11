@@ -131,6 +131,8 @@ export default class Admin extends Component {
         }
         else {
             console.log("You searched for: "+ query);
+            this.setState({ search_results: ["Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending..."] })
+
             const requestOptions = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
