@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
-import { render } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Modal, Button } from "react-bootstrap";
+import BlogModal from './Modal';
 
 export default class Admin extends Component {
 
@@ -10,10 +11,20 @@ export default class Admin extends Component {
 
         this.state = {
             search_results: ["Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending..."],
+            search_history: [],
             tag: null,
             search: "",
             show: 'show',
             timer: null,
+            isModalOpen: false,
+            currentBlog: null, // can hold an index from search_results array which will be visible in Modal
+            currentTitle: null,
+            currentAuthor: null,
+            currentRead: null,
+            currentUrl: null,
+            currentTag: null,
+            currentTimeTaken: null,
+            currentComment: null,
         }
     }
 
@@ -24,7 +35,7 @@ export default class Admin extends Component {
     divstatus = (e) =>{
         // this.setState({show: (this.state.show === 'show') ? 'hide' : 'show'});
 
-        if(this.state.search_results.length) {
+        if(this.state.search !== "") {
             this.setState({show: 'show'});
         }
         else {
@@ -42,6 +53,7 @@ export default class Admin extends Component {
             this.setState({ timer: null });
         }
         else {
+            this.divstatus();
             // call server to fetch results from db
             var myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
@@ -61,19 +73,19 @@ export default class Admin extends Component {
                 // console.log(res);
                 res.data.map((element, index) => {
                     // console.log(element);
-                    let id = element[0];
-                    let title = element[1];
-                    let author = element[2];
-                    let read = element[3];
-                    let tag = element[4];
-                    let comments = element[5];
-                    let publish_time = element[6];
-                    let link = element[7];
-                    let time_taken = element[8];
-                    let obj = id + "," + title + "," + author + "," + read + "," + tag + "," + comments + "," + publish_time + "," + link + "," + time_taken;
+                    // let id = element[0];
+                    // let title = element[1];
+                    // let author = element[2];
+                    // let read = element[3];
+                    // let tag = element[4];
+                    // let comments = element[5];
+                    // let publish_time = element[6];
+                    // let link = element[7];
+                    // let time_taken = element[8];
+                    // let obj = id + "," + title + "," + author + "," + read + "," + tag + "," + comments + "," + publish_time + "," + link + "," + time_taken;
                     // let search_results = [...this.state.search_results]
                     // this.setState({ search_results: [...search_results, obj] });
-                    this.state.search_results[index] = obj;
+                    this.state.search_results[index] = element; 
                     if(index < 8) {
                         this.state.search_results[index + 1] = "Crawling...";
                     }
@@ -89,38 +101,56 @@ export default class Admin extends Component {
     searchTag() {
         // query the backend with tag
         let query = this.state.search
-        console.log("You searched for: "+ query);
-        var myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
+        query = query.trim().toLowerCase()
+        if(!query) {
+            alert("Please enter a tag!");
+        }
+        else {
+            console.log("You searched for: "+ query);
+            const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tag: query })
+            };
+            // TODO: uncomment to actually search
+            // fetch('http://127.0.0.1:5000/search', requestOptions)
+            //     .then(response => response.json())
+            //     .then(data => console.log(data));
+    
+            // set event to call fetch result every 10 secs
+            const timer = setInterval(() => {
+                console.log('Polling server for results');
+                this.onlyFetchResults()
+            }, 10000);
 
-        var formdata = new FormData();
-        formdata.append("tag", query);
-
-        var requestOptions = {
-        method: 'POST',
-        headers: myHeaders,
-        body: formdata,
-        redirect: 'follow'
-        };
-
-        // fetch("http://127.0.0.1:5000/search", requestOptions)
-        // .then(response => response.text())
-        // .then(result => console.log(result))
-        // .catch(error => console.log('error', error));
-
-        // set event to call fetch result every 10 secs
-        const timer = setInterval(() => {
-            console.log('Polling server for results');
-            this.onlyFetchResults()
-        }, 10000);
-
-        this.setState({ timer: timer, tag: query });
-        console.log("Current state");
-        console.log(this.state);
+            this.setState({ timer: timer, tag: query });
+            console.log("Current state");
+            console.log(this.state);
+        }
     }   
 
     handleEvent = event => {
         this.setState({ search: event.target.value });
+    }
+
+    showDetails(index) {
+        const blog = this.state.search_results[index];
+        console.log(blog);
+        this.setState({ 
+            currentTitle: blog[1],
+            currentAuthor: blog[2],
+            currentRead: blog[3],
+            currentTag: blog[4],
+            currentBlog: blog[5],
+            currentComment: "Not available",
+            currentUrl: blog[8],
+            currentTimeTaken: blog[9], 
+            isModalOpen: true 
+        });
+    }
+
+    hideModal = () => {
+        this.setState({isModalOpen: false});
     }
 
 
@@ -134,11 +164,11 @@ export default class Admin extends Component {
                 {/* <div className="inp"> */}
                     <input onChange={this.handleEvent} className="inp" type="text" autoComplete="off" placeholder="Input a tag to search medium" name="search" id="search" />
                 {/* </div> */}
-                <button type="submit" className="btn btn-success">
+                <button type="submit" className="btn btn-outline-success">
                     <i className="fa fa-search"></i>
                 </button>
             </form>
-            <h2 className="text-center mt-5 search-results" hidden={this.state.tag ? false : true}>Search results</h2>
+            <h2 className="text-center mt-5 search-results" hidden={this.state.tag ? false : true}>Results will appear below</h2>
             {/* <span id="desc">Or Search using popular tags</span>
             <div>
                 <span>
@@ -155,13 +185,43 @@ export default class Admin extends Component {
                 <ol className="blogs">
                     {
                         this.state.search_results.map((result, index) => (
-                            <li>
-                                {result}
+                            <li key={index} className="blog" onClick={() => this.showDetails(index)}>
+                                {( (result[1] === "e" || result[1] === "r") ? result : result[1])}
                             </li>
                         ))
                     }
                 </ol>
             </div>
+            {/* blog modal */}
+            <Modal show={this.state.isModalOpen} onHide={this.hideModal} dialogClassName="cartModal modal-lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Blog details</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {
+                        <>
+                            <span>
+                                <h5>Title: {this.state.currentTitle}</h5>
+                                <h6>Author: {this.state.currentAuthor}</h6>
+                                <p>{this.state.currentRead}</p>
+                            </span>
+                            <p>
+                                {this.state.currentBlog}
+                            </p>
+                            <p>Source url: <a href={this.state.currentUrl} target="_blank" rel="noreferrer">Medium</a></p>
+                            <p>
+                                Tags: <span className="tags">{this.state.currentTag}</span>
+                            </p>
+                            <p className="float-left">Time taken to scrape: {this.state.currentTimeTaken} secs</p>
+                        </>
+                    }
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={this.hideModal}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
             </>
         );
     }
