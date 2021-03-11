@@ -11,8 +11,9 @@ CREATE TABLE `blogs` (
   `author` varchar(255),
   `details` varchar(255),
   `tags` varchar(255),
+  `blog` longtext,
   `comments` varchar(255),
-  `publish_time` timestamp,
+  `publish_time` varchar(255),
   `link` varchar(255),
   `time_taken` bigint
 );
