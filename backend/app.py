@@ -25,6 +25,12 @@ def test_db():
 
 @app.route('/search', methods=['POST'])
 def search():
+    
+    cursor = mysql.connection.cursor()
+    query_string = "TRUNCATE table blogs"
+    cursor.execute(query_string)
+    cursor.close()
+    
     tag_to_search = request.json
     tag_to_search = tag_to_search['tag']
     print(tag_to_search)
@@ -36,25 +42,26 @@ def search():
     # return jsonify({"data": tag_to_search})
     
     links = fetch_links(tag_to_search, suffixes)
-    articles = fetch_articles(links)
+    articles = fetch_articles(tag_to_search, links)
     
     insert_tags(tag_to_search)
     ct = datetime.datetime.now()
     insert_search_history(tag_to_search, ct, 1)
-    try:
-        for article in articles:
-            title = str(article['title'])
-            author = str(article['author'])
-            blog = str(article['blog'])
-            read = str(article['read'])
-            publish_time = str(article['publish_time'])
-            link = str(article['link'])
-            time_taken = int(article['time_taken'])
-            insert_blog(title, author, read, blog, tag_to_search, None, publish_time, link, time_taken)
-    except:
-        print("An exception occurred")
-    finally:
-        return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
+    return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
+    # try:
+    #     for article in articles:
+    #         title = str(article['title'])
+    #         author = str(article['author'])
+    #         blog = str(article['blog'])
+    #         read = str(article['read'])
+    #         publish_time = str(article['publish_time'])
+    #         link = str(article['link'])
+    #         time_taken = int(article['time_taken'])
+    #         insert_blog(title, author, read, blog, tag_to_search, None, publish_time, link, time_taken)
+    # except:
+    #     print("An exception occurred")
+    # finally:
+    #     return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
 
 @app.route('/get-blogs', methods=['GET'])
 def retrieve_blog():

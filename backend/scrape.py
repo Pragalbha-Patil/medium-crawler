@@ -6,6 +6,19 @@ import csv
 import unicodedata
 import pandas as pd
 import time
+from flask import Flask, request, jsonify
+
+from flask_mysqldb import MySQL
+
+app = Flask(__name__)
+
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'crawler'
+
+mysql = MySQL(app)
+
 
 def fetch_links(tag, suffix):
     count = 0
@@ -24,7 +37,7 @@ def fetch_links(tag, suffix):
                 links.append(i.a.get('href'))
     return links
 
-def fetch_articles(links):
+def fetch_articles(tag, links):
     count = 0
     # print("--- Links ---")
     # print(links)
@@ -70,8 +83,18 @@ def fetch_articles(links):
             time_taken = end_time - start_time
             article['time_taken'] = time_taken
             articles.append(article)
+            insert_blog(title, author, read, text, tag, None, publish_timestamp, link, time_taken)
     # print(articles)
     return articles
+
+def insert_blog(title, author, details, blog, tags, comments, publish_time, link, time_taken):
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (title, author, details, blog, tags, comments, publish_time, link, time_taken,))
+    row_count = cur.rowcount;
+    mysql.connection.commit()
+    cur.close()
+    if(row_count): return 'Success'
+    else: return 'Fail'
 
 def save_to_csv(articles, csv_file,  should_write = True):
     csv_columns = ['author', 'link', 'title', 'read', 'publish_time', 'blog']
@@ -102,7 +125,7 @@ def main():
     suffixes = ['', 'latest', 'archive/2000', 'archive/2001', 'archive/2002', 'archive/2003', 'archive/2004', 'archive/2005', 'archive/2006', 'archive/2007', 'archive/2008', 'archive/2009',
             'archive/2010', 'archive/2011', 'archive/2012', 'archive/2013', 'archive/2014', 'archive/2015', 'archive/2016', 'archive/2017', 'archive/2018']
     links = fetch_links(tag, suffixes)
-    articles = fetch_articles(links)
+    articles = fetch_articles(tag, links)
     save_to_csv(articles, file_name, should_write)
     should_write = False
 if __name__ == '__main__':
