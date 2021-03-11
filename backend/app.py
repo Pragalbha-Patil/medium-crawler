@@ -33,6 +33,10 @@ def search():
     
     links = fetch_links(tag_to_search, suffixes)
     articles = fetch_articles(links)
+    
+    insert_tags(tag_to_search)
+    ct = datetime.datetime.now()
+    insert_search_history(tag_to_search, ct, 1)
     try:
         for article in articles:
             title = str(article['title'])
@@ -42,9 +46,6 @@ def search():
             publish_time = str(article['publish_time'])
             link = str(article['link'])
             time_taken = int(article['time_taken'])
-            insert_tags(tag_to_search)
-            ct = datetime.datetime.now()
-            insert_search_history(tag_to_search, ct, 1)
             insert_blog(title, author, read, tag_to_search, None, publish_time, link, time_taken)
     except:
         print("An exception occurred")
