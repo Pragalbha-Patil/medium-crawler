@@ -9,7 +9,7 @@ export default class Admin extends Component {
         super(props);
 
         this.state = {
-            search_results: [],
+            search_results: ["Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending..."],
             tag: null,
             search: "",
             show: 'show',
@@ -36,7 +36,7 @@ export default class Admin extends Component {
         // check if search result length is 10 and stop interval
         const timer = this.state.timer;
         const search_results = [...this.state.search_results];
-        if(search_results.length >= 10) {
+        if(search_results.length >= 10 && search_results[9] !== "Pending...") {
             console.log("--- Timer cleared ---")
             clearInterval(timer);
             this.setState({ timer: null });
@@ -59,7 +59,7 @@ export default class Admin extends Component {
                 // console.log(typeof(result));
                 const res = JSON.parse(result);
                 // console.log(res);
-                res.data.forEach(element => {
+                res.data.map((element, index) => {
                     // console.log(element);
                     let id = element[0];
                     let title = element[1];
@@ -71,8 +71,12 @@ export default class Admin extends Component {
                     let link = element[7];
                     let time_taken = element[8];
                     let obj = id + "," + title + "," + author + "," + read + "," + tag + "," + comments + "," + publish_time + "," + link + "," + time_taken;
-                    let search_results = [...this.state.search_results]
-                    this.setState({ search_results: [...search_results, obj] });
+                    // let search_results = [...this.state.search_results]
+                    // this.setState({ search_results: [...search_results, obj] });
+                    this.state.search_results[index] = obj;
+                    if(index < 8) {
+                        this.state.search_results[index + 1] = "Crawling...";
+                    }
                     console.log("--- State ---");
                     this.divstatus();
                     console.log(this.state);
@@ -108,7 +112,7 @@ export default class Admin extends Component {
         const timer = setInterval(() => {
             console.log('Polling server for results');
             this.onlyFetchResults()
-        }, 5000);
+        }, 10000);
 
         this.setState({ timer: timer, tag: query });
         console.log("Current state");
@@ -121,6 +125,7 @@ export default class Admin extends Component {
 
 
     render() {
+
         return (
             <>
             <div className="main">
