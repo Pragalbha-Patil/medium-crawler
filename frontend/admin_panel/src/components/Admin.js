@@ -201,18 +201,18 @@ export default class Admin extends Component {
                     {
                         <>
                             <span>
-                                <h5>Title: {this.state.currentTitle}</h5>
-                                <h6>Author: {this.state.currentAuthor}</h6>
-                                <p>{this.state.currentRead}</p>
+                                <h5 className="current-title">Title: {this.state.currentTitle}</h5>
+                                <h6 className="current-author">Author: {this.state.currentAuthor}</h6>
+                                <p className="read-time">{this.state.currentRead}</p>
                             </span>
-                            <p>
+                            <p className="current-blog">
                                 {this.state.currentBlog}
                             </p>
-                            <p>Source url: <a href={this.state.currentUrl} target="_blank" rel="noreferrer">Medium</a></p>
+                            <p className="source-url">Source url: <a href={this.state.currentUrl} target="_blank" rel="noreferrer">Medium</a></p>
                             <p>
                                 Tags: <span className="tags">{this.state.currentTag}</span>
                             </p>
-                            <p className="float-left">Time taken to scrape: {this.state.currentTimeTaken} secs</p>
+                            <p className="float-left scraping-time">Time taken to scrape: {this.state.currentTimeTaken} secs</p>
                         </>
                     }
                 </Modal.Body>

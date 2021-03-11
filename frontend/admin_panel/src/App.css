@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light+Two&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1&display=swap');
+
 body {
   /* background-color: #F1F1F1; */
   background-color: #081b33;
@@ -137,6 +139,24 @@ body {
   color: #fff;
   padding: 5px;
   /* font-size: 16px; */
+}
+
+.current-blog {
+  font-family: 'Shippori Mincho B1', serif;
+  padding: 10px;
+  font-size: 20px;
+  line-height: 1.5;
+  text-align: justify;
+}
+
+.current-title {
+  font-family: 'Shippori Mincho B1', serif;
+  font-size: 20px;
+}
+
+.current-author {
+  font-family: 'Manrope', sans-serif;
+  /* font-style: italic; */
 }
 
 #show{display: block;}
