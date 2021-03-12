@@ -211,8 +211,9 @@ export default class Admin extends Component {
             </div> */}
             </div>
             <div className="count" onClick={() => {this.showSearchHistory()}}>
-                <span>
-                    <i className="fa fa-history" id="history-icon"> 0</i>
+                <span className="search-history-count">
+                    <i className="fa fa-history" id="history-icon"></i>
+                    {this.state.search_history.length}
                 </span>
             </div>
             <div id={this.state.show} className="content">
