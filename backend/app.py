@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, g
 from flask_mysqldb import MySQL
 import sqlite3
+import random
 
 import datetime
 import time
@@ -66,10 +67,21 @@ def search():
     
     if not articles:
         insert_search_history(tag_to_search, ct, 0)
+        insert_tags(tag_to_search)
         # search for related tags and inform the user about it!
+        popular = [
+            'startup', 'art', 'life', 'politics', 'travel', 'entrepreneurship', 'life lessons',
+            'poetry', 'health', 'education', 'love', 'design', 'music', 'writing', 'technology',
+            'business', 'self improvement', 'social media', 'Sports', 'Food'
+        ]
+        tag_to_search = random.choice(popular)
+        print("No results found, will search for " + str(tag_to_search))
+        links = fetch_links(tag_to_search, suffixes)
+        articles = fetch_articles(tag_to_search, links)
     else:
         insert_search_history(tag_to_search, ct, 1)
         insert_tags(tag_to_search)
+    
     return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
 
 @app.route('/get-blogs', methods=['GET'])
