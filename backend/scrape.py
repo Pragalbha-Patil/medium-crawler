@@ -6,7 +6,8 @@ import csv
 import unicodedata
 import pandas as pd
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, g
+import sqlite3
 
 from flask_mysqldb import MySQL
 
@@ -18,6 +19,20 @@ app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'crawler'
 
 mysql = MySQL(app)
+
+DATABASE = 'crawler.db'
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 
 def fetch_links(tag, suffix):
@@ -88,13 +103,22 @@ def fetch_articles(tag, links):
     return articles
 
 def insert_blog(title, author, details, blog, tags, comments, publish_time, link, time_taken):
-    cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (title, author, details, blog, tags, comments, publish_time, link, time_taken,))
-    row_count = cur.rowcount;
-    mysql.connection.commit()
+    # cur = mysql.connection.cursor()
+    cur = get_db().cursor() # SQLITE cursor
+    # cur.execute("INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (title, author, details, blog, tags, comments, publish_time, link, time_taken,))
+    cur.execute(
+        'INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (?,?,?,?,?,?,?,?,?)',
+        (
+            title, author, details, blog, tags, comments, publish_time, link, time_taken,
+        )
+    )
+    # row_count = cur.rowcount;
+    # mysql.connection.commit()
+    get_db().commit()
     cur.close()
-    if(row_count): return 'Success'
-    else: return 'Fail'
+    # if(row_count): return 'Success'
+    # else: return 'Fail'
+    return 'ok'
 
 def save_to_csv(articles, csv_file,  should_write = True):
     csv_columns = ['author', 'link', 'title', 'read', 'publish_time', 'blog']
