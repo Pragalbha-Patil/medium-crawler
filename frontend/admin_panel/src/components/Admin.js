@@ -63,7 +63,7 @@ export default class Admin extends Component {
             result = JSON.parse(result);
             const search_history = this.state.search_history;
             if(search_history.length) {
-                console.log(search_history[0]);
+                // console.log(search_history[0]);
                 if(search_history[0][1] === result.data[0][1]) {
                     console.log("Match found!");
                     clearInterval(this.state.searchResTimer);
@@ -72,12 +72,11 @@ export default class Admin extends Component {
             else {
                 result.data.reverse();
                 result.data.map((element, index) => {
-                    // console.log("Search results");
-                    console.log(element[1]);
-                    if(element[3] === 0 && status && element[1].toLowerCase() == query.toLowerCase()) {
-                        alert("Result not found for: " + element[1] + ", showing search for popular tags");
-                        clearInterval(this.state.timer);
-                        clearInterval(this.state.searchResTimer);
+                    if(element[3] == 0 && status && element[1].toLowerCase() == query.toLowerCase()) {
+                        alert("Result not found for " + element[1] + ", showing search for popular tags");
+                        toast.info("Result not found for " + element[1] + ", showing search for popular tags")
+                        // clearInterval(this.state.timer);
+                        // clearInterval(this.state.searchResTimer);
                     }
                     this.setState({ search_history: [...this.state.search_history, element] })
                 })
@@ -110,18 +109,21 @@ export default class Admin extends Component {
             fetch("http://127.0.0.1:5000/get-blogs", requestOptions)
             .then(response => response.text())
             .then(result => {
-                console.log("Results are here:");
+                // console.log("Results are here:");
                 // console.log(typeof(result));
                 const res = JSON.parse(result);
                 // console.log(res);
                 res.data.map((element, index) => {
+                    const currentTag = element[4]
+                    this.setState({ tag: currentTag });
+
                     this.state.search_results[index] = element; 
                     if(index < 8) {
                         this.state.search_results[index + 1] = "Crawling...";
                     }
-                    console.log("--- State ---");
+                    // console.log("--- State ---");
                     this.divstatus();
-                    console.log(this.state);
+                    // console.log(this.state);
                 })
             })
             .catch(error => console.log('error', error));
@@ -161,8 +163,8 @@ export default class Admin extends Component {
 
             this.setState({ search_history: [] });
             this.setState({ timer: timer, tag: query, searchResTimer: search_res_timer });
-            console.log("Current state");
-            console.log(this.state);
+            // console.log("Current state");
+            // console.log(this.state);
         }
     }   
 
@@ -172,7 +174,7 @@ export default class Admin extends Component {
 
     showDetails(index) {
         const blog = this.state.search_results[index];
-        console.log(blog);
+        // console.log(blog);
         this.setState({ 
             currentTitle: blog[1],
             currentAuthor: blog[2],
@@ -213,7 +215,7 @@ export default class Admin extends Component {
                     <i className="fa fa-search"></i>
                 </button>
             </form>
-            <h2 className="text-center mt-5 search-results" hidden={this.state.tag ? false : true}>Results will appear below</h2>
+            <h2 className="text-center mt-5 search-results" hidden={this.state.tag ? false : true}>Results for <span style={{textDecoration: "underline"}}>"{this.state.tag}"</span> will appear below</h2>
             {/* <span id="desc">Or Search using popular tags</span>
             <div>
                 <span>
