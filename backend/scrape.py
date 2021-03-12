@@ -8,6 +8,8 @@ import pandas as pd
 import time
 from flask import Flask, request, jsonify, g
 import sqlite3
+from random import randint
+from time import sleep
 
 from flask_mysqldb import MySQL
 
@@ -66,6 +68,7 @@ def fetch_articles(tag, links):
             article = {}
             data = requests.get(link)
             soup = BeautifulSoup(data.content, 'html.parser')
+            sleep(randint(1,10)) # introducing delay to avoid blocking.
             title = soup.findAll('meta', {"property": "og:title"})[0]
             title = title.get('content')
             author = soup.findAll('meta', {"name": "author"})[0]
@@ -86,7 +89,7 @@ def fetch_articles(tag, links):
                 text += unicodedata.normalize('NFKD',para.get_text()) + nxt_line
             article['blog'] = text
             end_time = time.time()
-            time_taken = end_time - start_time
+            time_taken = int(end_time - start_time)
             article['time_taken'] = time_taken
             articles.append(article)
             insert_blog(title, author, read, text, tag, None, publish_timestamp, link, time_taken)
