@@ -13,12 +13,12 @@ from flask_mysqldb import MySQL
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'crawler'
+# app.config['MYSQL_HOST'] = 'localhost'
+# app.config['MYSQL_USER'] = 'root'
+# app.config['MYSQL_PASSWORD'] = ''
+# app.config['MYSQL_DB'] = 'crawler'
 
-mysql = MySQL(app)
+# mysql = MySQL(app)
 
 DATABASE = 'crawler.db'
 
@@ -61,14 +61,11 @@ def fetch_articles(tag, links):
         if(count == 10): # only fetch 10 articles
             break
         else:
-            # print("Count: " + str(count))
             start_time = time.time()
             count += 1
             article = {}
             data = requests.get(link)
             soup = BeautifulSoup(data.content, 'html.parser')
-            # print(soup)
-            # title = soup.findAll('title')[0]
             title = soup.findAll('meta', {"property": "og:title"})[0]
             title = title.get('content')
             author = soup.findAll('meta', {"name": "author"})[0]
@@ -77,23 +74,17 @@ def fetch_articles(tag, links):
             read = read.get('value')
             publish_timestamp = soup.findAll('meta', {"property": "article:published_time"})[0]
             publish_timestamp = publish_timestamp.get('content')
-            # claps  = soup.findAll('button', {"data-action":"show-recommends"})[0].get_text()
-            # article['claps'] = unicodedata.normalize('NFKD', claps)
             article['author'] = unicodedata.normalize('NFKD', author)
             article['link'] = link
             article['title'] = unicodedata.normalize('NFKD', title)
             article['read'] = unicodedata.normalize('NFKD', read)
             article['publish_time'] = unicodedata.normalize('NFKD', publish_timestamp)
-            # print("--- Title ---")
-            # print(title)
             paras = soup.findAll('p')
             text = ''
             nxt_line = '\n'
             for para in paras:
                 text += unicodedata.normalize('NFKD',para.get_text()) + nxt_line
             article['blog'] = text
-            # print("--- Blog content ---")
-            # print(article['blog'])
             end_time = time.time()
             time_taken = end_time - start_time
             article['time_taken'] = time_taken
@@ -103,21 +94,15 @@ def fetch_articles(tag, links):
     return articles
 
 def insert_blog(title, author, details, blog, tags, comments, publish_time, link, time_taken):
-    # cur = mysql.connection.cursor()
     cur = get_db().cursor() # SQLITE cursor
-    # cur.execute("INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (title, author, details, blog, tags, comments, publish_time, link, time_taken,))
     cur.execute(
         'INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (?,?,?,?,?,?,?,?,?)',
         (
             title, author, details, blog, tags, comments, publish_time, link, time_taken,
         )
     )
-    # row_count = cur.rowcount;
-    # mysql.connection.commit()
     get_db().commit()
     cur.close()
-    # if(row_count): return 'Success'
-    # else: return 'Fail'
     return 'ok'
 
 def save_to_csv(articles, csv_file,  should_write = True):
