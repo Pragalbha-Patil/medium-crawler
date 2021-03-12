@@ -16,6 +16,7 @@ export default class Admin extends Component {
             search: "",
             show: 'show',
             timer: null,
+            searchResTimer: null,
             isModalOpen: false,
             currentBlog: null, // can hold an index from search_results array which will be visible in Modal
             currentTitle: null,
@@ -31,7 +32,7 @@ export default class Admin extends Component {
 
     componentDidMount() {
         this.divstatus()
-        this.fetchSearchResults()
+        this.fetchSearchResults(false, null)
     }
 
     divstatus = (e) =>{
@@ -45,7 +46,7 @@ export default class Admin extends Component {
         }
     }
 
-    fetchSearchResults() {
+    fetchSearchResults(status, query) {
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         myHeaders.append("Accept", "application/json");
@@ -60,9 +61,27 @@ export default class Admin extends Component {
         .then(response => response.text())
         .then(result => {
             result = JSON.parse(result);
-            result.data.map((element, index) => {
-                this.setState({ search_history: [...this.state.search_history, element] })
-            })
+            const search_history = this.state.search_history;
+            if(search_history.length) {
+                console.log(search_history[0]);
+                if(search_history[0][1] === result.data[0][1]) {
+                    console.log("Match found!");
+                    clearInterval(this.state.searchResTimer);
+                }
+            }
+            else {
+                result.data.reverse();
+                result.data.map((element, index) => {
+                    // console.log("Search results");
+                    console.log(element[1]);
+                    if(element[3] === 0 && status && element[1].toLowerCase() == query.toLowerCase()) {
+                        alert("Result not found for: " + element[1] + ", showing search for popular tags");
+                        clearInterval(this.state.timer);
+                        clearInterval(this.state.searchResTimer);
+                    }
+                    this.setState({ search_history: [...this.state.search_history, element] })
+                })
+            }
         })
         .catch(error => console.log('error', error));
     }
@@ -96,19 +115,6 @@ export default class Admin extends Component {
                 const res = JSON.parse(result);
                 // console.log(res);
                 res.data.map((element, index) => {
-                    // console.log(element);
-                    // let id = element[0];
-                    // let title = element[1];
-                    // let author = element[2];
-                    // let read = element[3];
-                    // let tag = element[4];
-                    // let comments = element[5];
-                    // let publish_time = element[6];
-                    // let link = element[7];
-                    // let time_taken = element[8];
-                    // let obj = id + "," + title + "," + author + "," + read + "," + tag + "," + comments + "," + publish_time + "," + link + "," + time_taken;
-                    // let search_results = [...this.state.search_results]
-                    // this.setState({ search_results: [...search_results, obj] });
                     this.state.search_results[index] = element; 
                     if(index < 8) {
                         this.state.search_results[index + 1] = "Crawling...";
@@ -149,7 +155,12 @@ export default class Admin extends Component {
                 this.onlyFetchResults()
             }, 1000);
 
-            this.setState({ timer: timer, tag: query });
+            const search_res_timer = setInterval(() => {
+                this.fetchSearchResults(true, query)
+            }, 5000);
+
+            this.setState({ search_history: [] });
+            this.setState({ timer: timer, tag: query, searchResTimer: search_res_timer });
             console.log("Current state");
             console.log(this.state);
         }
