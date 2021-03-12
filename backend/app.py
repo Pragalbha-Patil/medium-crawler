@@ -62,10 +62,14 @@ def search():
     
     links = fetch_links(tag_to_search, suffixes)
     articles = fetch_articles(tag_to_search, links)
-    
-    insert_tags(tag_to_search)
     ct = datetime.datetime.now()
-    insert_search_history(tag_to_search, ct, 1)
+    
+    if not articles:
+        insert_search_history(tag_to_search, ct, 0)
+        # search for related tags and inform the user about it!
+    else:
+        insert_search_history(tag_to_search, ct, 1)
+        insert_tags(tag_to_search)
     return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
 
 @app.route('/get-blogs', methods=['GET'])
