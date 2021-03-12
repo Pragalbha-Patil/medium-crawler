@@ -139,15 +139,15 @@ export default class Admin extends Component {
                 body: JSON.stringify({ tag: query })
             };
             // TODO: uncomment to actually search
-            // fetch('http://127.0.0.1:5000/search', requestOptions)
-            //     .then(response => response.json())
-            //     .then(data => console.log(data));
+            fetch('http://127.0.0.1:5000/search', requestOptions)
+                .then(response => response.json())
+                .then(data => console.log(data));
     
             // set event to call fetch result every 10 secs
             const timer = setInterval(() => {
                 console.log('Polling server for results');
                 this.onlyFetchResults()
-            }, 3000);
+            }, 1000);
 
             this.setState({ timer: timer, tag: query });
             console.log("Current state");
