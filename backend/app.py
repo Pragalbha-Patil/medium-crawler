@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, g
 from flask_mysqldb import MySQL
 import sqlite3
 import random
+from flask_cors import CORS
 
 import datetime
 import time
@@ -9,6 +10,7 @@ import time
 from scrape import fetch_links, fetch_articles, save_to_csv
 
 app = Flask(__name__)
+CORS(app)
 
 # app.config['MYSQL_HOST'] = 'localhost'
 # app.config['MYSQL_USER'] = 'root'

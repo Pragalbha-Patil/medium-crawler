@@ -11,10 +11,12 @@ import sqlite3
 from random import randint
 from time import sleep
 import re
+from flask_cors import CORS
 
 from flask_mysqldb import MySQL
 
 app = Flask(__name__)
+CORS(app)
 
 # app.config['MYSQL_HOST'] = 'localhost'
 # app.config['MYSQL_USER'] = 'root'
