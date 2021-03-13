@@ -10,6 +10,7 @@ from flask import Flask, request, jsonify, g
 import sqlite3
 from random import randint
 from time import sleep
+import re
 
 from flask_mysqldb import MySQL
 
@@ -68,7 +69,19 @@ def fetch_articles(tag, links):
             article = {}
             data = requests.get(link)
             soup = BeautifulSoup(data.content, 'html.parser')
+            
             sleep(randint(1,10)) # introducing delay to avoid blocking.
+            
+            # find related tags from page
+            for ul in soup.find_all('div'):
+                for ul in soup.find_all('ul'):
+                    for li in ul.find_all('li'):
+                        a = li.find('a')
+                        # print(a)
+            
+            # insert related tags to db
+            insert_tags(a.get_text())
+                    
             title = soup.findAll('meta', {"property": "og:title"})[0]
             title = title.get('content')
             author = soup.findAll('meta', {"name": "author"})[0]
@@ -95,6 +108,18 @@ def fetch_articles(tag, links):
             insert_blog(title, author, read, text, tag, None, publish_timestamp, link, time_taken)
     # print(articles)
     return articles
+
+def insert_tags(tag):
+    cursor1 = get_db().cursor() # SQLITE cursor
+    cursor1.execute(
+        'INSERT INTO tags(tag) VALUES (?)',
+        (
+            tag,
+        )
+    )
+    get_db().commit()
+    cursor1.close()
+    return 'ok'
 
 def insert_blog(title, author, details, blog, tags, comments, publish_time, link, time_taken):
     cur = get_db().cursor() # SQLITE cursor
