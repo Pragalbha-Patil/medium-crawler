@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
+import { Modal, Button } from "react-bootstrap";
+
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Modal, Button } from "react-bootstrap";
-import BlogModal from './Modal';
+import Notifications, {notify} from 'react-notify-toast';
 
 export default class Admin extends Component {
 
@@ -74,10 +75,8 @@ export default class Admin extends Component {
                 result.data.reverse();
                 result.data.map((element, index) => {
                     if(element[3] == 0 && status && element[1].toLowerCase() == query.toLowerCase()) {
-                        alert("Result not found for " + element[1] + ", showing search for popular tags");
-                        toast.info("Result not found for " + element[1] + ", showing search for popular tags")
-                        // clearInterval(this.state.timer);
-                        // clearInterval(this.state.searchResTimer);
+                        // alert("Result not found for " + element[1] + ", showing search for popular tags");
+                        notify.show("Result not found for " + element[1] + ", showing search for popular tags", 'error');
                     }
                     this.setState({ search_history: [...this.state.search_history, element] })
                 })
@@ -119,7 +118,7 @@ export default class Admin extends Component {
                     this.setState({ tag: currentTag });
 
                     this.state.search_results[index] = element; 
-                    if(index <= 8) {
+                    if(index < 8) {
                         this.state.search_results[index + 1] = "Crawling...";
                     }
                     // console.log("--- State ---");
@@ -169,16 +168,27 @@ export default class Admin extends Component {
         .catch(error => console.log('error', error));
     }
 
-    searchTag() {
+    searchTag(tag) {
         // query the backend with tag
         let query = this.state.search
-        query = query.trim().toLowerCase()
+        if(tag) {
+            query = tag;
+        }
+        else {
+            query = query.trim().toLowerCase()
+        }
         if(!query) {
-            alert("Please enter a tag!");
+            // alert("Please enter a tag!");
+            notify.show("Please enter a tag!", 'error');
         }
         else {
             console.log("You searched for: "+ query);
-            this.setState({ search_results: ["Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending..."] })
+            this.setState({ 
+                search_results: ["Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending..."], 
+                search: query,
+                // show: false,
+                relatedTags: []
+            })
 
             const requestOptions = {
                 method: 'POST',
@@ -186,15 +196,15 @@ export default class Admin extends Component {
                 body: JSON.stringify({ tag: query })
             };
             // TODO: uncomment to actually search
-            // fetch('http://127.0.0.1:5000/search', requestOptions)
-            //     .then(response => response.json())
-            //     .then(data => console.log(data));
+            fetch('http://127.0.0.1:5000/search', requestOptions)
+                .then(response => response.json())
+                .then(data => console.log(data));
     
             // set event to call fetch result every 10 secs
             const timer = setInterval(() => {
                 console.log('Polling server for results');
                 this.onlyFetchResults()
-            }, 1000);
+            }, 2500);
 
             const search_res_timer = setInterval(() => {
                 this.fetchSearchResults(true, query)
@@ -239,11 +249,24 @@ export default class Admin extends Component {
         this.setState({isSearchHistoryOpen: true});
     }
 
+    handleTagsSearch(tag) {
+        console.log("Tag to search: " + tag);
+        clearInterval(this.state.timer);
+        this.setState({isModalOpen: false});
+        this.searchTag(tag)
+        // alert("Fetching results for tag: " + tag);
+        // let myColor = { background: '#032b5e', text: "#46EF0B" };
+        // notify.show("Fetching results for tag: " + tag, "custom", 5000, myColor);
+        notify.show("Fetching results for tag: " + tag, 'success');
+        console.log(this.state);
+    }
+
 
     render() {
 
         return (
             <>
+            <Notifications />
             <div className="main">
             <span id="title">Medium Crawler</span>
             <form className="main-search" onSubmit={(e) => {e.preventDefault(); this.searchTag()}}>
@@ -301,7 +324,7 @@ export default class Admin extends Component {
                                     {
                                         (this.state.relatedTags).map((element, index) => (
                                             <>
-                                                <span className="tags"> {element} </span>
+                                                <span className="tags" key={index} onClick={() => this.handleTagsSearch(element)}> {element} </span>
                                                 <span className="space-between" />
                                             </>
                                         ))

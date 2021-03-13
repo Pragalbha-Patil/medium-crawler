@@ -10,7 +10,6 @@ class App extends Component {
   render() {
     return (
         <React.Fragment>
-          {/* <Navbar /> */}
           <Switch>
               <Route exact path="/" component={Admin} />
               <Route component={Default} />
