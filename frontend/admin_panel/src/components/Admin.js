@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 import { Modal, Button } from "react-bootstrap";
-
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Notifications, {notify} from 'react-notify-toast';
 
@@ -10,6 +8,7 @@ export default class Admin extends Component {
     constructor(props) {
         super(props);
 
+        // hold everything that we'll need throughout the application
         this.state = {
             search_results: ["Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending...","Pending..."],
             search_history: [],
@@ -19,7 +18,7 @@ export default class Admin extends Component {
             timer: null,
             searchResTimer: null,
             isModalOpen: false,
-            currentBlog: null, // can hold an index from search_results array which will be visible in Modal
+            currentBlog: null,
             currentTitle: null,
             currentAuthor: null,
             currentRead: null,
@@ -33,12 +32,12 @@ export default class Admin extends Component {
     }
 
     componentDidMount() {
-        this.divstatus()
-        this.fetchSearchResults(false, null)
+        this.divstatus() // hides the result set initially
+        this.fetchSearchResults(false, null) // fetches search history from db
     }
 
+    // toggles between search results hide and show
     divstatus = (e) =>{
-        // this.setState({show: (this.state.show === 'show') ? 'hide' : 'show'});
 
         if(this.state.search !== "") {
             this.setState({show: 'show'});
@@ -48,6 +47,7 @@ export default class Admin extends Component {
         }
     }
 
+    // fetches search history from db
     fetchSearchResults(status, query) {
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
@@ -85,7 +85,9 @@ export default class Admin extends Component {
         .catch(error => console.log('error', error));
     }
 
+    // fetches crawler result from db after an interval
     onlyFetchResults() {
+        
         // check if search result length is 10 and stop interval
         const timer = this.state.timer;
         const search_results = [...this.state.search_results];
@@ -106,24 +108,20 @@ export default class Admin extends Component {
             redirect: 'follow'
             };
 
+            // calls the api to fetch blogs
             fetch("http://127.0.0.1:5000/get-blogs", requestOptions)
             .then(response => response.text())
             .then(result => {
-                // console.log("Results are here:");
-                // console.log(typeof(result));
                 const res = JSON.parse(result);
-                // console.log(res);
                 res.data.map((element, index) => {
                     const currentTag = element[4]
                     this.setState({ tag: currentTag });
-
+                    // updates blog result in real-time
                     this.state.search_results[index] = element; 
                     if(index < 8) {
                         this.state.search_results[index + 1] = "Crawling...";
                     }
-                    // console.log("--- State ---");
                     this.divstatus();
-                    // console.log(this.state);
                 })
                 
                 // populate related tags array
@@ -139,6 +137,7 @@ export default class Admin extends Component {
         }
     }
 
+    // fetches related tags from db 
     getRelatedTags() {
         // call server to fetch results from db
         var myHeaders = new Headers();
@@ -153,11 +152,7 @@ export default class Admin extends Component {
         fetch("http://127.0.0.1:5000/get-related-tags", requestOptions)
         .then(response => response.text())
         .then(result => {
-            // console.log("Results are here:");
-            // console.log(typeof(result));
             const res = JSON.parse(result);
-            // console.log(res);
-
             let relatedTags = this.state.relatedTags;
             this.setState({ relatedTags: [] });
             res.tags.map((element, index) => {
@@ -168,6 +163,7 @@ export default class Admin extends Component {
         .catch(error => console.log('error', error));
     }
 
+    // sends the user query to backend to crawl
     searchTag(tag) {
         // query the backend with tag
         let query = this.state.search
@@ -195,7 +191,7 @@ export default class Admin extends Component {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tag: query })
             };
-            // TODO: uncomment to actually search
+            // calls API
             fetch('http://127.0.0.1:5000/search', requestOptions)
                 .then(response => response.json())
                 .then(data => console.log(data));
@@ -212,18 +208,17 @@ export default class Admin extends Component {
 
             this.setState({ search_history: [] });
             this.setState({ timer: timer, tag: query, searchResTimer: search_res_timer });
-            // console.log("Current state");
-            // console.log(this.state);
         }
     }   
 
+    // updates the search state as user types in the query
     handleEvent = event => {
         this.setState({ search: event.target.value });
     }
 
+    // sets the modal content after every click
     showDetails(index) {
         const blog = this.state.search_results[index];
-        // console.log(blog);
         this.setState({ 
             currentTitle: blog[1],
             currentAuthor: blog[2],
@@ -237,53 +232,47 @@ export default class Admin extends Component {
         });
     }
 
+    // hides blog modal
     hideModal = () => {
         this.setState({isModalOpen: false});
     }
     
+    // hides search modal
     hideSearchModal = () => {
         this.setState({isSearchHistoryOpen: false});
     }
 
+    // opens search modal onclick
     showSearchHistory() {
         this.setState({isSearchHistoryOpen: true});
     }
 
+    // search for related tags found in blog modal
     handleTagsSearch(tag) {
         console.log("Tag to search: " + tag);
         clearInterval(this.state.timer);
         this.setState({isModalOpen: false});
         this.searchTag(tag)
-        // alert("Fetching results for tag: " + tag);
-        // let myColor = { background: '#032b5e', text: "#46EF0B" };
-        // notify.show("Fetching results for tag: " + tag, "custom", 5000, myColor);
         notify.show("Fetching results for tag: " + tag, 'success');
-        console.log(this.state);
+        // console.log(this.state);
     }
 
 
+    // render results to page
     render() {
 
         return (
             <>
-            <Notifications />
+            <Notifications /> {/* Notifications JSX */}
             <div className="main">
-            <span id="title">Medium Crawler</span>
+            <span id="title">Medium Crawler</span> {/* App name */}
             <form className="main-search" onSubmit={(e) => {e.preventDefault(); this.searchTag()}}>
-                {/* <div className="inp"> */}
-                    <input onChange={this.handleEvent} className="inp" type="text" autoComplete="off" placeholder="Input a tag to search medium" name="search" id="search" />
-                {/* </div> */}
+                <input onChange={this.handleEvent} className="inp" autoFocus type="text" autoComplete="off" placeholder="Input a tag to search medium" name="search" id="search" />
                 <button type="submit" className="btn btn-outline-success">
                     <i className="fa fa-search"></i>
                 </button>
             </form>
             <h2 className="text-center mt-5 search-results" hidden={this.state.tag ? false : true}>Results for <span style={{textDecoration: "underline"}}>"{this.state.tag}"</span> will appear below</h2>
-            {/* <span id="desc">Or Search using popular tags</span>
-            <div>
-                <span>
-                    <button type="button" className="btn btn-outline-success">Coding</button>
-                </span>
-            </div> */}
             </div>
             <div className="count" onClick={() => {this.showSearchHistory()}}>
                 <span className="search-history-count">
