@@ -26,7 +26,8 @@ export default class Admin extends Component {
             currentTag: null,
             currentTimeTaken: null,
             currentComment: null,
-            isSearchHistoryOpen: false
+            isSearchHistoryOpen: false,
+            relatedTags: [],
         }
     }
 
@@ -118,16 +119,54 @@ export default class Admin extends Component {
                     this.setState({ tag: currentTag });
 
                     this.state.search_results[index] = element; 
-                    if(index < 8) {
+                    if(index <= 8) {
                         this.state.search_results[index + 1] = "Crawling...";
                     }
                     // console.log("--- State ---");
                     this.divstatus();
                     // console.log(this.state);
                 })
+                
+                // populate related tags array
+                res.tags.map((element, index) => {
+                    this.state.relatedTags[index] = element[1];
+                })
+                
+                // get unique tags
+                let unique = [...new Set(this.state.relatedTags)];
+                this.setState({ relatedTags: unique });
             })
             .catch(error => console.log('error', error));
         }
+    }
+
+    getRelatedTags() {
+        // call server to fetch results from db
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        var requestOptions = {
+        method: 'GET',
+        headers: myHeaders,
+        redirect: 'follow'
+        };
+
+        fetch("http://127.0.0.1:5000/get-related-tags", requestOptions)
+        .then(response => response.text())
+        .then(result => {
+            // console.log("Results are here:");
+            // console.log(typeof(result));
+            const res = JSON.parse(result);
+            // console.log(res);
+
+            let relatedTags = this.state.relatedTags;
+            this.setState({ relatedTags: [] });
+            res.tags.map((element, index) => {
+                this.setState({ relatedTags: [...relatedTags, element[1]] });
+            })
+            console.log(relatedTags)
+        })
+        .catch(error => console.log('error', error));
     }
 
     searchTag() {
@@ -147,9 +186,9 @@ export default class Admin extends Component {
                 body: JSON.stringify({ tag: query })
             };
             // TODO: uncomment to actually search
-            fetch('http://127.0.0.1:5000/search', requestOptions)
-                .then(response => response.json())
-                .then(data => console.log(data));
+            // fetch('http://127.0.0.1:5000/search', requestOptions)
+            //     .then(response => response.json())
+            //     .then(data => console.log(data));
     
             // set event to call fetch result every 10 secs
             const timer = setInterval(() => {
@@ -258,7 +297,16 @@ export default class Admin extends Component {
                             </p>
                             <p className="source-url">Source url: <a href={this.state.currentUrl} target="_blank" rel="noreferrer">Medium</a></p>
                             <p>
-                                Tags: <span className="tags">{this.state.currentTag}</span>
+                                Tags: <span>
+                                    {
+                                        (this.state.relatedTags).map((element, index) => (
+                                            <>
+                                                <span className="tags"> {element} </span>
+                                                <span className="space-between" />
+                                            </>
+                                        ))
+                                    }
+                                </span>
                             </p>
                             <p className="float-left scraping-time">Time taken to scrape: {this.state.currentTimeTaken} secs</p>
                         </>
