@@ -51,6 +51,13 @@ def search():
     cur.execute(query_string)
     get_db().commit()
     cur.close()
+    
+    # truncate tags second
+    query_string = "delete FROM tags;"
+    cur = get_db().cursor() # SQLITE cursor
+    cur.execute(query_string)
+    get_db().commit()
+    cur.close()
 
     
     tag_to_search = request.json
@@ -67,7 +74,7 @@ def search():
     
     if not articles:
         insert_search_history(tag_to_search, ct, 0)
-        insert_tags(tag_to_search)
+        # insert_tags(tag_to_search)
         # search for related tags and inform the user about it!
         popular = [
             'startup', 'art', 'life', 'politics', 'travel', 'entrepreneurship', 'life lessons',
@@ -80,7 +87,7 @@ def search():
         articles = fetch_articles(tag_to_search, links)
     else:
         insert_search_history(tag_to_search, ct, 1)
-        insert_tags(tag_to_search)
+        # insert_tags(tag_to_search)
     
     return jsonify({"search_tag":tag_to_search, "links":links, "articles": articles})
 
@@ -92,7 +99,14 @@ def retrieve_blog():
     cursor.execute(query_string)
     data = cursor.fetchall()
     cursor.close()
-    return jsonify({"data":data})
+    
+    cursor = get_db().cursor() # SQLITE cursor
+    query_string = "SELECT * FROM tags"
+    cursor.execute(query_string)
+    tags = cursor.fetchall()
+    cursor.close()
+    
+    return jsonify({"data": data, "tags": tags})
 
 @app.route('/get-search-results', methods=['GET'])
 def get_search_history():
@@ -103,6 +117,16 @@ def get_search_history():
     data = cursor.fetchall()
     cursor.close()
     return jsonify({"data":data})
+
+@app.route('/get-related-tags', methods=['GET'])
+def get_related_tags():
+    # cursor = mysql.connection.cursor()
+    cursor = get_db().cursor() # SQLITE cursor
+    query_string = "SELECT * FROM tags"
+    cursor.execute(query_string)
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify({"tags":data})
 
 
 def insert_tags(tag):
@@ -116,15 +140,6 @@ def insert_tags(tag):
     get_db().commit()
     cursor1.close()
     return 'ok'
-
-def insert_blog(title, author, details, blog, tags, comments, publish_time, link, time_taken):
-    cur = get_db().cursor() # SQLITE cursor
-    cur.execute("INSERT INTO blogs(title, author, details, blog, tags, comments, publish_time, link, time_taken) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (title, author, details, blog, tags, comments, publish_time, link, time_taken,))
-    row_count = cur.rowcount;
-    mysql.connection.commit()
-    cur.close()
-    if(row_count): return 'Success'
-    else: return 'Fail'
 
 def insert_search_history(search_tag, created_at, result_found):
     cur2 = get_db().cursor() # SQLITE cursor
