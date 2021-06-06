@@ -11,8 +11,7 @@ class App extends Component {
     return (
         <React.Fragment>
           <Switch>
-              <Route exact path="/home" component={Admin} />
-              <Route component={Default} />
+              <Route path="/" component={Admin} />
           </Switch>
         </React.Fragment>
     );
