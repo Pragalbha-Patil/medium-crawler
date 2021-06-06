@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/medium-crawler/static/css/main.354507de.chunk.css",
+    "main.js": "/medium-crawler/static/js/main.3c50ea98.chunk.js",
+    "main.js.map": "/medium-crawler/static/js/main.3c50ea98.chunk.js.map",
+    "runtime-main.js": "/medium-crawler/static/js/runtime-main.766e8bea.js",
+    "runtime-main.js.map": "/medium-crawler/static/js/runtime-main.766e8bea.js.map",
+    "static/css/2.1efc486b.chunk.css": "/medium-crawler/static/css/2.1efc486b.chunk.css",
+    "static/js/2.e531c8eb.chunk.js": "/medium-crawler/static/js/2.e531c8eb.chunk.js",
+    "static/js/2.e531c8eb.chunk.js.map": "/medium-crawler/static/js/2.e531c8eb.chunk.js.map",
+    "static/js/3.3d5d0592.chunk.js": "/medium-crawler/static/js/3.3d5d0592.chunk.js",
+    "static/js/3.3d5d0592.chunk.js.map": "/medium-crawler/static/js/3.3d5d0592.chunk.js.map",
+    "index.html": "/medium-crawler/index.html",
+    "static/css/2.1efc486b.chunk.css.map": "/medium-crawler/static/css/2.1efc486b.chunk.css.map",
+    "static/css/main.354507de.chunk.css.map": "/medium-crawler/static/css/main.354507de.chunk.css.map",
+    "static/js/2.e531c8eb.chunk.js.LICENSE.txt": "/medium-crawler/static/js/2.e531c8eb.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.766e8bea.js",
+    "static/css/2.1efc486b.chunk.css",
+    "static/js/2.e531c8eb.chunk.js",
+    "static/css/main.354507de.chunk.css",
+    "static/js/main.3c50ea98.chunk.js"
+  ]
+}
