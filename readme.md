@@ -14,11 +14,9 @@ npm install
 
 ```bash
 cd medium-crawler/backend
-pip install -r requirements.txt
 flask_run.bat # runs the flask server
 
 cd medium-crawler/frontend/admin_panel
-npm install
 yarn start # runs react app
 ```
 
